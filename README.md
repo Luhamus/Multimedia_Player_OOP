@@ -9,3 +9,5 @@
 * Võimalus ka anda loo nimi, Mida proovitakse internetist leida ja alla laadida
 * muusika/filmi kohta täiendav info (võimaluse korral)
 * võimalus lisada subtiirite fail
+* Playlist/Queue loomine
+* 
