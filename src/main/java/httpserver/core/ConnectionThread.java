@@ -18,6 +18,11 @@ public class ConnectionThread extends Thread{
         try(InputStream inputStream = socket.getInputStream();
         OutputStream outputStream = socket.getOutputStream()) {
 
+            //int _byte;
+            //while ( (_byte = inputStream.read()) >= 0 ){
+            //    System.out.print( (char)_byte);
+            //}
+
             // WRITE HERE
             String html = "<html><head><title>LetsGou</title></head> <body><h1>PlaceHolder thingy</h1></body></html>";
 
