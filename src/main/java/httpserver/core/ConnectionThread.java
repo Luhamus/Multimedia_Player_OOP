@@ -20,7 +20,7 @@ public class ConnectionThread extends Thread{
 
             //int _byte;
             //while ( (_byte = inputStream.read()) >= 0 ){
-            //    System.out.print( (char)_byte);
+            //   System.out.print( (char)_byte);
             //}
 
             // WRITE HERE
