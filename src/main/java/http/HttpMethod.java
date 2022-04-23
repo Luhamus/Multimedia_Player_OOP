@@ -1,7 +1,7 @@
 package http;
 
 public enum HttpMethod {
-    GET, GEAD;
+    GET, HEAD;
     public static final int MAX_LENGTH;
 
     static {

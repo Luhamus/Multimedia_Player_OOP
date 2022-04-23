@@ -215,7 +215,7 @@ class HttpParserTest {
     }
 
     private InputStream generateBadHttpVersionTestCase(){
-        String rawData = "GET / HTP/1.1\r\n" +
+        String rawData = "GET / HTP/1.1\r\n" +  // <- Version Error
                 "Host: localhost:8080\r\n" +
                 "Connection: keep-alive\r\n" +
                 "sec-ch-ua: \" Not A;Brand\";v=\"99\", \"Chromium\";v=\"100\", \"Google Chrome\";v=\"100\"\r\n" +
@@ -238,7 +238,7 @@ class HttpParserTest {
     }
 
     private InputStream generateUnsupportedHttpVersionTestCase(){
-        String rawData = "GET / HTTP/2.1\r\n" +
+        String rawData = "GET / HTTP/2.1\r\n" +  // <-- Version doesn't exist
                 "Host: localhost:8080\r\n" +
                 "Connection: keep-alive\r\n" +
                 "sec-ch-ua: \" Not A;Brand\";v=\"99\", \"Chromium\";v=\"100\", \"Google Chrome\";v=\"100\"\r\n" +
@@ -261,7 +261,7 @@ class HttpParserTest {
     }
 
     private InputStream generateSupportedHttpVersionTestCase(){
-        String rawData = "GET / HTTP/1.2\r\n" +
+        String rawData = "GET / HTTP/1.2\r\n" +  // <-- Version doesn't exist
                 "Host: localhost:8080\r\n" +
                 "Connection: keep-alive\r\n" +
                 "sec-ch-ua: \" Not A;Brand\";v=\"99\", \"Chromium\";v=\"100\", \"Google Chrome\";v=\"100\"\r\n" +
