@@ -1,15 +1,19 @@
 package httpserver.core;
 
 import http.*;
+import httpserver.utils.ParseUrlQuery;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ConnectionThread extends Thread{
 
-    private Socket socket;
+    final private Socket socket;
+    private HttpMethod method;
     private String reqTarget;
     private ArrayList<String> endpoints;
 
@@ -38,64 +42,77 @@ public class ConnectionThread extends Thread{
             try {
                 HttpRequest req = new HttpParser().parseHttpRequest(inputStream);
 
-                HttpMethod method = req.getMethod();
-                reqTarget  = req.getRequestTarget();
+                method = req.getMethod();
+                reqTarget = req.getRequestTarget();
                 HttpVersion httpVersion = req.getBestCompatibleHttpVersion();
-            }
-            catch (HttpParsingException e) {
+            } catch (HttpParsingException e) {
                 System.out.println("Couldn't parse");
-                System.out.println("Error code: "+e.getErrorCode());
+                System.out.println("Error code: " + e.getErrorCode());
             }
 
-            Path currentRelativePath = Paths.get("");
-            String pwdPath = currentRelativePath.toAbsolutePath().toString();
-            String endpoint = reqTarget;
-            System.out.println("reqTarget: "+reqTarget);
-            if (reqTarget.equals("/"))
-                endpoint="/index";
-            else if (!endpoints.contains(endpoint))
-                endpoint="/errorPage";
-
-            System.out.println(endpoint);
-            pwdPath+="/src/main/html"+endpoint+".html";
+            //Vaatame, kas URL-iga anti kaasa ka muutjuaid
+            HashMap<String, String> queryParams = ParseUrlQuery.getParameters(reqTarget);
+            reqTarget = ParseUrlQuery.getUrlTarget(reqTarget);
+            System.out.println(queryParams);  // kui parameetreid ei antut, siis queryParams == null
 
 
-            // Response Back --- From Here
-            //String content = "<html><head><title>LetsGou</title></head> <body><h1>PlaceHolder thingy</h1></body></html>";
+            if (method.name().equals("GET")) {
 
-            StringBuilder contentBuilder = new StringBuilder();
-            try {
-                BufferedReader in = new BufferedReader(new FileReader(pwdPath));
-                String str;
-                while ((str = in.readLine()) != null) {
-                    contentBuilder.append(str);
+                Path currentRelativePath = Paths.get("");
+                String pwdPath = currentRelativePath.toAbsolutePath().toString();
+                String endpoint = reqTarget;
+                if (reqTarget.equals("/"))
+                    endpoint = "/index";
+                else if (!endpoints.contains(endpoint))
+                    endpoint = "/errorPage";
+
+                pwdPath += "/src/main/html" + endpoint + ".html";
+
+
+                // Response Back --- GET
+                //String content = "<html><head><title>LetsGou</title></head> <body><h1>PlaceHolder thingy</h1></body></html>";
+
+                StringBuilder contentBuilder = new StringBuilder();
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(pwdPath));
+                    String str;
+                    while ((str = in.readLine()) != null) {
+                        contentBuilder.append(str);
+                    }
+                    in.close();
+                } catch (IOException e) {
                 }
-                in.close();
-            } catch (IOException e) {
+                String content = contentBuilder.toString();
+
+                String CRLF = "\n\r";  //  Newline + enter, vaja http protocollis
+                String response =   //http protocol stuff
+                        "HTTP/1.1 200 OK" + CRLF +   //status bar : HTTP_VERSION RESPONSE_CODE MESSAGE
+                                "Content-length: " + content.getBytes().length + CRLF +  // Headers
+                                CRLF +  //Done with protocol info
+                                //html +
+                                content +
+                                CRLF + CRLF;
+
+                outputStream.write(response.getBytes());
+
             }
-            String content = contentBuilder.toString();
+        }  // If Methoid Equals GET end
+
+       /**************************************************
+       Other Methods (Kui implementeerime, sest ei pruugi)
+       **************************************************/
 
 
-                    String CRLF = "\n\r";  //  Newline + enter, vaja http protocollis
-            String response =   //http protocol stuff
-                    "HTTP/1.1 200 OK" + CRLF +   //status bar : HTTP_VERSION RESPONSE_CODE MESSAGE
-                            "Content-length: " + content.getBytes().length + CRLF +  // Headers
-                            CRLF +  //Done with protocol info
-                            //html +
-                            content +
-                            CRLF + CRLF;
-
-            outputStream.write(response.getBytes());
-
-        }
-        catch (IOException e) {
+        catch(IOException e){
             System.out.println(e);
         }
         finally{
             try {
                 socket.close();
-            } catch (IOException e) {}  // mby no good, but work
+            } catch (IOException e) {
+            }  // mby no good, but work
         }
+
 
 
     }  //Run
