@@ -8,7 +8,7 @@ public class HttpServer {
 
         ListenerThread serverListenerThread = null;  //Täpselt ei tea hetkel, miks nii, IDEA aitas. Vist ei ole autoclosable vms
         try {
-            serverListenerThread = new ListenerThread(8080, "");
+            serverListenerThread = new ListenerThread(8080, "/src/main/html");  //Windowsil vist peab bäkslashima
             serverListenerThread.start();
             System.out.println("Sever is up");
 

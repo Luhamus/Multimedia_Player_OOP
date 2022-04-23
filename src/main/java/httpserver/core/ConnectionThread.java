@@ -13,14 +13,17 @@ import java.util.HashMap;
 public class ConnectionThread extends Thread{
 
     final private Socket socket;
+    final private String webroot;
+
     private HttpMethod method;
     private String reqTarget;
     private ArrayList<String> endpoints;
 
-    public ConnectionThread(Socket socket) {
+    public ConnectionThread(Socket socket, String webroot) {
         this.socket = socket;
-        this.endpoints=new ArrayList<>();
+        this.webroot = webroot;
 
+        this.endpoints=new ArrayList<>();
         //Lisa endpointse siin
         this.endpoints.add("/index");
         this.endpoints.add("/contact");
@@ -66,7 +69,7 @@ public class ConnectionThread extends Thread{
                 else if (!endpoints.contains(endpoint))
                     endpoint = "/errorPage";
 
-                pwdPath += "/src/main/html" + endpoint + ".html";
+                pwdPath += webroot + endpoint + ".html";
 
 
                 // Response Back --- GET

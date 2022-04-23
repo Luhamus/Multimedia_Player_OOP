@@ -23,7 +23,7 @@ public class ListenerThread extends Thread{
             while (serverSocket.isBound() && !serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
 
-                ConnectionThread ConnectionThread = new ConnectionThread(socket);
+                ConnectionThread ConnectionThread = new ConnectionThread(socket, webroot);
                 ConnectionThread.start();
                 System.out.println("New Connection");
 
