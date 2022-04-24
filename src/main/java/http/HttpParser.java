@@ -11,9 +11,9 @@ import java.nio.charset.StandardCharsets;
 //Klass iga threadi päringu lugemiseks
 public class HttpParser {
     private final static Logger LOGGER = LoggerFactory.getLogger(HttpParser.class);
-    private static final int SP = 0x20; // 32
-    private static final int CR = 0x0D; // 13
-    private static final int LF = 0x0A; // 10
+    private static final int SP = 0x20; // 32  -> Space
+    private static final int CR = 0x0D; // 13  -> Carriage Return( Nagu enter aga mitte päris)
+    private static final int LF = 0x0A; // 10  -> Line feed ((Uus Rida)
 
     public HttpRequest parseHttpRequest(InputStream inputStream) throws HttpParsingException {
         InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.US_ASCII);
@@ -36,8 +36,11 @@ public class HttpParser {
         boolean methodParsed = false;
         boolean requestTargetParsed = false;
 
+        //Otsime Kohta kus on \cr\nf, see näitab requestLine lõppu.
+        //Kui enne leiame SP characteri (Space), siis parsime vastavalt
         int _byte;
         while((_byte = reader.read()) >= 0){
+
             if(_byte == CR) {
                 _byte = reader.read();
                 if(_byte == LF) {
@@ -56,7 +59,10 @@ public class HttpParser {
                     throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
                 }
             }
+
             if (_byte == SP) {
+
+                // Kuna Requestline jrk: Method, Req Target, Version, siis vaatame selles jrk.
                 if (!methodParsed){
                     LOGGER.debug("Request Line METHOD to Process : {}" , processingDataBuffer.toString());
                     request.setMethod(processingDataBuffer.toString());
@@ -71,7 +77,10 @@ public class HttpParser {
 
 
                 processingDataBuffer.delete(0, processingDataBuffer.length());
-            } else{
+            }
+
+            // Kui ei ole SP ega CR, siis lisame chari stringBuilderisse
+            else{
                 processingDataBuffer.append((char)_byte);
                 if(!methodParsed){
                     if(processingDataBuffer.length() > HttpMethod.MAX_LENGTH){
