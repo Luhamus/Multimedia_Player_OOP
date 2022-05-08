@@ -1,12 +1,12 @@
 package http;
-import com.sun.net.httpserver.Headers;
+import java.util.HashMap;
 
 public class HttpRequest extends HttpMessage{
     private HttpMethod method;
     private String requestTarget;
     private String originalHttpVersion; //requesti literaal
     private HttpVersion bestCompatibleHttpVersion;
-    private Headers headers = new Headers();
+    private final HashMap<String, String> headers = new HashMap<>();
 
     public HttpRequest() {
     }
@@ -27,7 +27,7 @@ public class HttpRequest extends HttpMessage{
         return originalHttpVersion;
     }
 
-    public Headers getHeaders() { return headers; }
+    public HashMap<String, String>  getHeaders() { return headers; }
 
     void setMethod(String methodName) throws HttpParsingException {
         for (HttpMethod method : HttpMethod.values()){
@@ -66,7 +66,7 @@ public class HttpRequest extends HttpMessage{
      */
     public void setHeaders(String headerLine) {
         String[] headerLineArr=(headerLine.split(":"));
-        this.headers.add(headerLineArr[0].strip(), headerLineArr[1].strip());
+        this.headers.put(headerLineArr[0].strip(), headerLineArr[1].strip());
 
     }
 
