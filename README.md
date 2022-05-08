@@ -3,7 +3,7 @@ veebiserver, mis suudab vastu võtta browserilt tulevaid päringuid ja neile vas
 ### Funktsionaalsus
 - [ ] suudab browseri saadetud päringute sünktaksist aru saada
     - [x] Request Line Parse 
-    - [ ] Headers Parse 
+    - [x] Headers Parse 
     - [ ] Body Parse
     - [x] Url parameters
 - [ ] suudab vastuseks ketta pealt faile serveerida
