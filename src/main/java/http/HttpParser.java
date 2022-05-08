@@ -21,10 +21,11 @@ public class HttpParser {
         HttpRequest request = new HttpRequest();
         try {
             parseRequestLine(reader, request);
+            parseHeaders(reader, request);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        parseReaders(reader, request);
+
         parseBody(reader, request);
 
         return request;
@@ -75,7 +76,6 @@ public class HttpParser {
                     throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
                 }
 
-
                 processingDataBuffer.delete(0, processingDataBuffer.length());
             }
 
@@ -91,7 +91,41 @@ public class HttpParser {
         }
     }
 
-    private void parseReaders(InputStreamReader reader, HttpRequest request) {
+    /**
+     * Reads bytes and adds lines(ifFinished == 2) to instance "request" until it detects 2 pairs of CR and LF (ifFinished == 4),
+     * because that separates headers from body.
+     * Reading bytes starts after start line, because last method already read them.
+     *
+     * @param reader stream of incoming bytes from request
+     * @param request class where we store requests
+     * @throws IOException
+     * @throws HttpParsingException
+     */
+    private void parseHeaders(InputStreamReader reader, HttpRequest request)throws IOException, HttpParsingException {
+        int _byte;
+        StringBuilder processingDataBuffer = new StringBuilder();
+        while ((_byte = reader.read()) >= 0) {
+            int ifFinished = 0;
+            while (_byte == CR || _byte == LF){
+                ifFinished++;
+                if(ifFinished == 2){
+                    request.setHeaders(processingDataBuffer.toString());
+                    processingDataBuffer.setLength(0);
+                }
+                if(ifFinished == 4){
+                    if(!request.getHeaders().isEmpty()) {
+                        return;
+                    }else{
+                        throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+                    }
+                }
+
+                _byte = reader.read();
+            }
+            processingDataBuffer.append((char)_byte);
+
+            }
+
     }
 
     private void parseBody(InputStreamReader reader, HttpRequest request) {

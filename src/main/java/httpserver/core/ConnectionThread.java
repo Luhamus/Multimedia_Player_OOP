@@ -35,12 +35,12 @@ public class ConnectionThread extends Thread{
         OutputStream outputStream = socket.getOutputStream()) {
 
             // Kui vaja näha täpselt, mis input on uncommentida.
-
-            //int _byte;
-            //while ( (_byte = inputStream.read()) >= 0 ){
-            //   System.out.print( (char)_byte);
-            //}
-
+/*
+            int _byte;
+            while ( (_byte = inputStream.read()) >= 0 ){
+               System.out.print( (char)_byte);
+            }
+*/
 
             try {
                 HttpRequest req = new HttpParser().parseHttpRequest(inputStream);

@@ -1,10 +1,12 @@
 package http;
+import com.sun.net.httpserver.Headers;
 
 public class HttpRequest extends HttpMessage{
     private HttpMethod method;
     private String requestTarget;
     private String originalHttpVersion; //requesti literaal
     private HttpVersion bestCompatibleHttpVersion;
+    private Headers headers = new Headers();
 
     public HttpRequest() {
     }
@@ -24,6 +26,8 @@ public class HttpRequest extends HttpMessage{
     public String getOriginalHttpVersion() {
         return originalHttpVersion;
     }
+
+    public Headers getHeaders() { return headers; }
 
     void setMethod(String methodName) throws HttpParsingException {
         for (HttpMethod method : HttpMethod.values()){
@@ -54,4 +58,16 @@ public class HttpRequest extends HttpMessage{
             );
         }
     }
+
+    /**
+     * Set request headers
+     *
+     * @param headerLine line of string from header with key and value that needs splitting and formatting
+     */
+    public void setHeaders(String headerLine) {
+        String[] headerLineArr=(headerLine.split(":"));
+        this.headers.add(headerLineArr[0].strip(), headerLineArr[1].strip());
+
+    }
+
 }
