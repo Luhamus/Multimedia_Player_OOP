@@ -6,7 +6,8 @@ public class HttpRequest extends HttpMessage{
     private String requestTarget;
     private String originalHttpVersion; //requesti literaal
     private HttpVersion bestCompatibleHttpVersion;
-    private final HashMap<String, String> headers = new HashMap<>();
+    private HashMap<String, String> headers;
+    private String body;
 
     public HttpRequest() {
     }
@@ -59,15 +60,15 @@ public class HttpRequest extends HttpMessage{
         }
     }
 
-    /**
-     * Set request headers
-     *
-     * @param headerLine line of string from header with key and value that needs splitting and formatting
-     */
-    public void setHeaders(String headerLine) {
-        String[] headerLineArr=(headerLine.split(":"));
-        this.headers.put(headerLineArr[0].strip(), headerLineArr[1].strip());
-
+    public void setHeaders(HashMap<String, String> headers) {
+        this.headers = headers;
     }
 
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
 }
