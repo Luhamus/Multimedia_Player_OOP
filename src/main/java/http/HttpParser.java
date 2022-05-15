@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+
+import static java.lang.Integer.parseInt;
 
 //Klass iga threadi päringu lugemiseks
 public class HttpParser {
@@ -22,11 +25,12 @@ public class HttpParser {
         try {
             parseRequestLine(reader, request);
             parseHeaders(reader, request);
+            parseBody(reader, request);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        parseBody(reader, request);
+
 
         return request;
     }
@@ -104,31 +108,43 @@ public class HttpParser {
     private void parseHeaders(InputStreamReader reader, HttpRequest request)throws IOException, HttpParsingException {
         int _byte;
         StringBuilder processingDataBuffer = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<>();
         while ((_byte = reader.read()) >= 0) {
             int ifFinished = 0;
             while (_byte == CR || _byte == LF){
                 ifFinished++;
                 if(ifFinished == 2){
-                    request.setHeaders(processingDataBuffer.toString());
+                    String[] headerLineArr=(processingDataBuffer.toString().split(":"));
+                    headers.put(headerLineArr[0].strip(), headerLineArr[1].strip());
                     processingDataBuffer.setLength(0);
                 }
                 if(ifFinished == 4){
-                    if(!request.getHeaders().isEmpty()) {
-                        return;
-                    }else{
-                        throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
-                    }
+                    request.setHeaders(headers);
+                    return;
                 }
 
                 _byte = reader.read();
             }
             processingDataBuffer.append((char)_byte);
-
             }
-
     }
 
-    private void parseBody(InputStreamReader reader, HttpRequest request) {
-    }
+    private void parseBody(InputStreamReader reader, HttpRequest request) throws IOException {
+        HashMap<String, String> headers = request.getHeaders();
+        int bodyLength;
+        StringBuilder processingDataBuffer = new StringBuilder();
+        if(headers.containsKey("Content-Length")){
+            bodyLength = parseInt(headers.get("Content-Length"));
+        } else{
+            return;
+        }
+        int _byte;
+        for (int i = 0; i < bodyLength; i++) {
+            _byte = reader.read();
+            processingDataBuffer.append((char)_byte);
+        }
 
+        request.setBody(processingDataBuffer.toString());
+        System.out.println(processingDataBuffer);
+    }
 }
