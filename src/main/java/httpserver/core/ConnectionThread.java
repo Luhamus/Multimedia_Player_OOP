@@ -17,6 +17,8 @@ public class ConnectionThread extends Thread{
 
     private HttpMethod method;
     private String reqTarget;
+    private String body;
+
     private ArrayList<String> endpoints;
 
     public ConnectionThread(Socket socket, String webroot) {
@@ -27,6 +29,7 @@ public class ConnectionThread extends Thread{
         //Lisa endpointse siin
         this.endpoints.add("/index");
         this.endpoints.add("/contact");
+        this.endpoints.add("/login");
     }
 
     @Override
@@ -45,8 +48,10 @@ public class ConnectionThread extends Thread{
             try {
                 HttpRequest req = new HttpParser().parseHttpRequest(inputStream);
 
+                body = req.getBody();
                 method = req.getMethod();
                 reqTarget = req.getRequestTarget();
+
                 HttpVersion httpVersion = req.getBestCompatibleHttpVersion();
             } catch (HttpParsingException e) {
                 System.out.println("Couldn't parse");
@@ -98,14 +103,46 @@ public class ConnectionThread extends Thread{
 
                 outputStream.write(response.getBytes());
 
+            }  // If Methoid Equals GET end
+
+            else if (method.name().equals("POST")) {
+
+                //Body handle
+                String[] info = body.split("&");
+
+
+                Path currentRelativePath = Paths.get("");
+                String pwdPath = currentRelativePath.toAbsolutePath().toString();
+                pwdPath += webroot + "index.html";
+
+                StringBuilder contentBuilder = new StringBuilder();
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(pwdPath));
+                    String str;
+                    while ((str = in.readLine()) != null) {
+                        contentBuilder.append(str);
+                    }
+                    in.close();
+                } catch (IOException e) {
+                }
+
+
+                String content = contentBuilder.toString();
+
+                String CRLF = "\n\r";  //  Newline + enter, vaja http protocollis
+                String response =   //http protocol stuff
+                        "HTTP/1.1 200 OK" + CRLF +   //status bar : HTTP_VERSION RESPONSE_CODE MESSAGE
+                                "Content-length: " + content.getBytes().length + CRLF +  // Headers
+                                CRLF +  //Done with protocol info
+                                //html +
+                                content +
+                                CRLF + CRLF;
+
+                outputStream.write(response.getBytes());
             }
-        }  // If Methoid Equals GET end
-
-       /**************************************************
-       Other Methods (Kui implementeerime, sest ei pruugi)
-       **************************************************/
 
 
+        } // Try block end
         catch(IOException e){
             System.out.println(e);
         }
