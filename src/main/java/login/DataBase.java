@@ -21,22 +21,29 @@ public class DataBase {
             statement.executeUpdate("drop table if exists account");
             statement.executeUpdate("create table account (username string, password string)");
 
-            statement.executeUpdate("insert into account values('rasmus', 'pswd')");
-            statement.executeUpdate("insert into account values('abcd', '1234')");
+            addAccountToDB(statement, "rasmus", "pswd");
+            addAccountToDB(statement, "abcd", "1234");
+
 
             ResultSet rs = getAllRegisteredUsers(statement);
 
+
+            // Testing
             System.out.println("Kõik kasutajad: ");
             while(rs.next()) {
                 // read the result set
-                System.out.println("name = " + rs.getString("username"));
+                System.out.println("kasutaja = " + rs.getString("username"));
             }
+
+            System.out.println(isAccountRegistered(statement, "rasmus"));
+            System.out.println(isAccountRegistered(statement, "brrrrrr"));
+
         }
 
         catch(SQLException e)
         {
             // if the error message is "out of memory",
-            // it probably means no database file is found
+            // siis arvatavasti vale db asukoht vms
             System.err.println(e.getMessage());
         }
 
@@ -54,9 +61,21 @@ public class DataBase {
         }
     }
 
+    //Meetodid
+
+
+
+    public static void addAccountToDB(Statement statement, String username, String password) throws SQLException {
+        statement.executeUpdate("insert into account values(\'"+ username +"\', \'" + password+ "\')");
+    }
+
     public static ResultSet getAllRegisteredUsers(Statement statement) throws SQLException {
         return statement.executeQuery("select * from account");
     }
 
+    public static boolean isAccountRegistered(Statement statement, String username) throws SQLException {
+        ResultSet rs = statement.executeQuery("select * from account where account.username = \'" + username + "\'");
+        return rs.next();
+    }
 
 }
