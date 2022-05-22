@@ -5,6 +5,7 @@ import httpserver.utils.ParseUrlQuery;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -69,39 +70,55 @@ public class ConnectionThread extends Thread{
                 Path currentRelativePath = Paths.get("");
                 String pwdPath = currentRelativePath.toAbsolutePath().toString();
                 String endpoint = reqTarget;
-                if (reqTarget.equals("/"))
+                //if (reqTarget.equals("/"))
                     endpoint = "/index";
-                else if (!endpoints.contains(endpoint))
-                    endpoint = "/errorPage";
+                /*else if (!endpoints.contains(endpoint))
+                    endpoint = "/errorPage";*/
+                System.out.println(reqTarget);
+                if (reqTarget.contains(".jpg")){
+                    pwdPath += "/src/main/pictures" + reqTarget;
+                    System.out.println(pwdPath);
+                    byte[] imageToBytes = Files.readAllBytes(Paths.get(pwdPath));
+                    System.out.println(pwdPath);
+                    String response =   //http protocol stuff
+                            "HTTP/1.0 200 Document Follows \r\n" +
+                                    "Content - Type: image/png > \r\n" +
+                                    "Content - Length: " + imageToBytes.length + "\r\n" +
+                                    "\r\n";
 
-                pwdPath += webroot + endpoint + ".html";
+                    outputStream.write(response.getBytes());
+                    outputStream.write(imageToBytes);
+                }
+                else {
+                    pwdPath += webroot + endpoint + ".html";
+                    StringBuilder contentBuilder = new StringBuilder();
+                    try {
+                        BufferedReader in = new BufferedReader(new FileReader(pwdPath));
+                        String str;
+                        while ((str = in.readLine()) != null) {
+                            contentBuilder.append(str);
+                        }
+                        in.close();
+                    } catch (IOException e) {
+                    }
+                    String content = contentBuilder.toString();
 
+                    String CRLF = "\n\r";  //  Newline + enter, vaja http protocollis
+                    String response =   //http protocol stuff
+                            "HTTP/1.1 200 OK" + CRLF +   //status bar : HTTP_VERSION RESPONSE_CODE MESSAGE
+                                    "Content-length: " + content.getBytes().length + CRLF +  // Headers
+                                    CRLF +  //Done with protocol info
+                                    //html +
+                                    content +
+                                    CRLF + CRLF;
+
+                    outputStream.write(response.getBytes());
+                }
 
                 // Response Back --- GET
                 //String content = "<html><head><title>LetsGou</title></head> <body><h1>PlaceHolder thingy</h1></body></html>";
 
-                StringBuilder contentBuilder = new StringBuilder();
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(pwdPath));
-                    String str;
-                    while ((str = in.readLine()) != null) {
-                        contentBuilder.append(str);
-                    }
-                    in.close();
-                } catch (IOException e) {
-                }
-                String content = contentBuilder.toString();
 
-                String CRLF = "\n\r";  //  Newline + enter, vaja http protocollis
-                String response =   //http protocol stuff
-                        "HTTP/1.1 200 OK" + CRLF +   //status bar : HTTP_VERSION RESPONSE_CODE MESSAGE
-                                "Content-length: " + content.getBytes().length + CRLF +  // Headers
-                                CRLF +  //Done with protocol info
-                                //html +
-                                content +
-                                CRLF + CRLF;
-
-                outputStream.write(response.getBytes());
 
             }  // If Methoid Equals GET end
 
