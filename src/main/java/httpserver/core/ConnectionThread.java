@@ -2,12 +2,10 @@ package httpserver.core;
 
 import http.*;
 import httpserver.utils.ParseUrlQuery;
+import httpserver.utils.ServeHtml;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -38,13 +36,11 @@ public class ConnectionThread extends Thread{
         try(InputStream inputStream = socket.getInputStream();
         OutputStream outputStream = socket.getOutputStream()) {
 
-            // Kui vaja näha täpselt, mis input on uncommentida.
-/*
+            /* Kui vaja näha täpselt, mis input on uncommentida.
             int _byte;
             while ( (_byte = inputStream.read()) >= 0 ){
                System.out.print( (char)_byte);
-            }
-*/
+            } */
 
             try {
                 HttpRequest req = new HttpParser().parseHttpRequest(inputStream);
@@ -55,112 +51,30 @@ public class ConnectionThread extends Thread{
 
                 HttpVersion httpVersion = req.getBestCompatibleHttpVersion();
             } catch (HttpParsingException e) {
-                System.out.println("Couldn't parse");
-                System.out.println("Error code: " + e.getErrorCode());
+                System.out.println("Couldn't parse, Error code: " + e.getErrorCode());
             }
 
             //Vaatame, kas URL-iga anti kaasa ka muutjuaid
             HashMap<String, String> queryParams = ParseUrlQuery.getParameters(reqTarget);
-            reqTarget = ParseUrlQuery.getUrlTarget(reqTarget);
-            System.out.println(queryParams);  // kui parameetreid ei antut, siis queryParams == null
+            reqTarget = ParseUrlQuery.getUrlTarget(reqTarget); // kui parameetreid ei antut, siis queryParams == null
+
+
+            /* Methods */
 
 
             if (method.name().equals("GET")) {
-
-                Path currentRelativePath = Paths.get("");
-                String pwdPath = currentRelativePath.toAbsolutePath().toString();
-                String endpoint = reqTarget;
-                //if (reqTarget.equals("/"))
-                    endpoint = "/index";
-                /*else if (!endpoints.contains(endpoint))
-                    endpoint = "/errorPage";*/
-                System.out.println(reqTarget);
-                if (reqTarget.contains(".jpg")){
-                    pwdPath += "/src/main/pictures" + reqTarget;
-                    System.out.println(pwdPath);
-                    byte[] imageToBytes = Files.readAllBytes(Paths.get(pwdPath));
-                    System.out.println(pwdPath);
-                    String response =   //http protocol stuff
-                            "HTTP/1.0 200 Document Follows \r\n" +
-                                    "Content - Type: image/png > \r\n" +
-                                    "Content - Length: " + imageToBytes.length + "\r\n" +
-                                    "\r\n";
-
-                    outputStream.write(response.getBytes());
-                    outputStream.write(imageToBytes);
-                }
-                else {
-                    pwdPath += webroot + endpoint + ".html";
-                    StringBuilder contentBuilder = new StringBuilder();
-                    try {
-                        BufferedReader in = new BufferedReader(new FileReader(pwdPath));
-                        String str;
-                        while ((str = in.readLine()) != null) {
-                            contentBuilder.append(str);
-                        }
-                        in.close();
-                    } catch (IOException e) {
-                    }
-                    String content = contentBuilder.toString();
-
-                    String CRLF = "\n\r";  //  Newline + enter, vaja http protocollis
-                    String response =   //http protocol stuff
-                            "HTTP/1.1 200 OK" + CRLF +   //status bar : HTTP_VERSION RESPONSE_CODE MESSAGE
-                                    "Content-length: " + content.getBytes().length + CRLF +  // Headers
-                                    CRLF +  //Done with protocol info
-                                    //html +
-                                    content +
-                                    CRLF + CRLF;
-
-                    outputStream.write(response.getBytes());
-                }
-
-                // Response Back --- GET
-                //String content = "<html><head><title>LetsGou</title></head> <body><h1>PlaceHolder thingy</h1></body></html>";
-
-
-
-            }  // If Methoid Equals GET end
-
+                ServeHtml.serveHtmlFile(endpoints, reqTarget, webroot, outputStream);
+            }
             else if (method.name().equals("POST")) {
-
-                //Body handle
                 String[] info = body.split("&");
+                //Siin saaks siis bodyga asju teha
 
-
-                Path currentRelativePath = Paths.get("");
-                String pwdPath = currentRelativePath.toAbsolutePath().toString();
-                pwdPath += webroot + "index.html";
-
-                StringBuilder contentBuilder = new StringBuilder();
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(pwdPath));
-                    String str;
-                    while ((str = in.readLine()) != null) {
-                        contentBuilder.append(str);
-                    }
-                    in.close();
-                } catch (IOException e) {
-                }
-
-
-                String content = contentBuilder.toString();
-
-                String CRLF = "\n\r";  //  Newline + enter, vaja http protocollis
-                String response =   //http protocol stuff
-                        "HTTP/1.1 200 OK" + CRLF +   //status bar : HTTP_VERSION RESPONSE_CODE MESSAGE
-                                "Content-length: " + content.getBytes().length + CRLF +  // Headers
-                                CRLF +  //Done with protocol info
-                                //html +
-                                content +
-                                CRLF + CRLF;
-
-                outputStream.write(response.getBytes());
+                ServeHtml.serveHtmlFile(endpoints, reqTarget, webroot, outputStream);
             }
 
 
-        } // Try block end
-        catch(IOException e){
+        }  // Big Try block end
+        catch(Exception e){
             System.out.println(e);
         }
         finally{

@@ -1,14 +1,19 @@
 ## Veebiserver
 veebiserver, mis suudab vastu võtta browserilt tulevaid päringuid ja neile vastata. 
+Placehorder endpont'id vaatamsieks:
+- /index
+- /contact
+- /login
+- 404 Not Found errorpage
 ### Funktsionaalsus
 - [x] suudab browseri saadetud päringute sünktaksist aru saada
     - [x] Request Line Parse 
     - [x] Headers Parse 
     - [x] Body Parse
     - [x] Url parameters
-- [ ] suudab vastuseks ketta pealt faile serveerida
+- [x] suudab vastuseks ketta pealt faile serveerida
     - [x] Puhas Html
-    - [ ] Pildid jms
+    - [x] Pildid
 - [ ] suudab vastu võtta browseris täidetud ankeetide andmeid (html forms; tekstilüngad ja uploaditud failid)
 - [x] suudab mitu päringut parallelselt töödelda
 - [ ] suudab päringutele dünaamiliselt vastuseid koostada (vastavalt ankeeti sisestatud andmetele / aadressi lisatud parameetritele)
